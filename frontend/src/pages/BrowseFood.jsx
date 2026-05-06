@@ -4,8 +4,9 @@ import { getNearbyListings, getAllListings } from '../api/listings'
 import { claimListing } from '../api/claims'
 import { useNotifications } from '../context/NotificationContext'
 import ListingGrid from '../components/listings/ListingGrid'
+import ListingMap from '../components/listings/ListingMap'
 import ListingDetail from '../components/listings/ListingDetail'
-import { MapPin, SlidersHorizontal, RefreshCw } from 'lucide-react'
+import { MapPin, SlidersHorizontal, RefreshCw, Map as MapIcon, Grid } from 'lucide-react'
 
 export default function BrowseFood() {
   const [location, setLocation] = useState(null)
@@ -13,6 +14,7 @@ export default function BrowseFood() {
   const [radius, setRadius] = useState(5)
   const [category, setCategory] = useState('')
   const [selected, setSelected] = useState(null)
+  const [viewMode, setViewMode] = useState('map')
   const { addToast } = useNotifications()
   const qc = useQueryClient()
 
@@ -59,11 +61,21 @@ export default function BrowseFood() {
             }
           </div>
         </div>
-        <button onClick={() => refetch()} disabled={isFetching}
-          className="btn-secondary py-1.5 text-sm gap-2">
-          <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
-          {isFetching ? 'Refreshing...' : 'Refresh'}
-        </button>
+        <div className="flex gap-2">
+          <div className="flex bg-gray-800 p-1 rounded-lg border border-gray-700">
+            <button onClick={() => setViewMode('map')} className={`p-1.5 rounded-md ${viewMode === 'map' ? 'bg-gray-700 text-brand-400' : 'text-gray-400 hover:text-white'}`}>
+              <MapIcon className="w-4 h-4" />
+            </button>
+            <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-md ${viewMode === 'grid' ? 'bg-gray-700 text-brand-400' : 'text-gray-400 hover:text-white'}`}>
+              <Grid className="w-4 h-4" />
+            </button>
+          </div>
+          <button onClick={() => refetch()} disabled={isFetching}
+            className="btn-secondary py-1.5 text-sm gap-2">
+            <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
+            {isFetching ? 'Refresh' : 'Refresh'}
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -101,13 +113,22 @@ export default function BrowseFood() {
       )}
 
       {/* Listings */}
-      <ListingGrid
-        listings={listings}
-        loading={isLoading}
-        onView={setSelected}
-        onClaim={(l) => claimMutation.mutate(l.id)}
-        emptyMessage={location ? `No food available within ${radius} km. Try increasing the radius.` : 'No listings available.'}
-      />
+      {viewMode === 'map' ? (
+        <ListingMap 
+          listings={listings} 
+          location={location} 
+          onView={setSelected}
+          onClaim={(l) => claimMutation.mutate(l.id)}
+        />
+      ) : (
+        <ListingGrid
+          listings={listings}
+          loading={isLoading}
+          onView={setSelected}
+          onClaim={(l) => claimMutation.mutate(l.id)}
+          emptyMessage={location ? `No food available within ${radius} km. Try increasing the radius.` : 'No listings available.'}
+        />
+      )}
 
       {/* Detail Modal */}
       {selected && <ListingDetail listing={selected} onClose={() => setSelected(null)} />}

@@ -20,14 +20,15 @@ export default function ListingGrid({ listings, loading, onClaim, onView, emptyM
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {listings.map((listing) => (
-        <ListingCard
-          key={listing.id}
-          listing={listing}
-          onClaim={onClaim}
-          onView={onView}
-        />
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {listings.map((listing, idx) => (
+        <div key={listing.id} className="animate-slide-up" style={{ animationDelay: `${idx * 0.05}s`, opacity: 0 }}>
+          <ListingCard
+            listing={listing}
+            onClaim={onClaim}
+            onView={onView}
+          />
+        </div>
       ))}
     </div>
   )

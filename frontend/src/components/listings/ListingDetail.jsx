@@ -1,14 +1,20 @@
-import { X, MapPin, Package, User, Clock, ExternalLink } from 'lucide-react'
+import { useState } from 'react'
+import { X, MapPin, Package, User, Clock, ExternalLink, MessageCircle, CheckSquare } from 'lucide-react'
 import { format } from 'date-fns'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { claimListing } from '../../api/claims'
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query'
+import { claimListing, getClaimsForListing } from '../../api/claims'
 import { useNotifications } from '../../context/NotificationContext'
 import { useAuth } from '../../context/AuthContext'
+import ChatWindow from '../chat/ChatWindow'
+import RatingModal from '../claims/RatingModal'
+import UserReputationBadge from '../common/UserReputationBadge'
 
 export default function ListingDetail({ listing, onClose }) {
   const { user } = useAuth()
   const { addToast } = useNotifications()
   const qc = useQueryClient()
+  const [activeChat, setActiveChat] = useState(null)
+  const [ratingClaim, setRatingClaim] = useState(null)
 
   const claimMutation = useMutation({
     mutationFn: () => claimListing({ listing_id: listing.id }),
@@ -19,6 +25,12 @@ export default function ListingDetail({ listing, onClose }) {
       onClose()
     },
     onError: (e) => addToast(e.response?.data?.detail || 'Failed to claim', 'error'),
+  })
+
+  const { data: claims = [] } = useQuery({
+    queryKey: ['claimsForListing', listing.id],
+    queryFn: () => getClaimsForListing(listing.id).then(r => r.data),
+    enabled: user?.role === 'donor',
   })
 
   const mapsUrl = `https://www.google.com/maps?q=${listing.latitude},${listing.longitude}`
@@ -59,6 +71,36 @@ export default function ListingDetail({ listing, onClose }) {
           <ExternalLink className="w-4 h-4" /> View on Google Maps
         </a>
 
+        {/* Claims for Donor */}
+        {user?.role === 'donor' && claims.length > 0 && (
+          <div className="mb-4">
+            <h3 className="font-bold text-gray-200 text-sm mb-2 border-t border-gray-800 pt-4">Claims on this listing</h3>
+            <div className="space-y-2">
+              {claims.map(claim => (
+                <div key={claim.id} className="bg-gray-800 p-2 rounded-lg flex items-center justify-between text-sm">
+                  <div>
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <p className="text-white font-medium text-xs">Receiver: {claim.receiver_id.substring(0, 8)}...</p>
+                      <UserReputationBadge userId={claim.receiver_id} />
+                    </div>
+                    <p className="text-gray-400 text-xs">Status: {claim.status}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setActiveChat(claim.id)} className="btn-secondary py-1 px-2 text-xs flex items-center gap-1">
+                      <MessageCircle className="w-3.5 h-3.5" /> Chat
+                    </button>
+                    {['pending', 'confirmed'].includes(claim.status) && (
+                      <button onClick={() => setRatingClaim(claim)} className="btn-primary py-1 px-2 text-xs flex items-center gap-1">
+                        <CheckSquare className="w-3.5 h-3.5" /> Complete
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Actions */}
         <div className="flex gap-3 pt-3 border-t border-gray-800">
           <button onClick={onClose} className="btn-secondary flex-1">Close</button>
@@ -73,6 +115,8 @@ export default function ListingDetail({ listing, onClose }) {
           )}
         </div>
       </div>
+      {activeChat && <ChatWindow claimId={activeChat} onClose={() => setActiveChat(null)} />}
+      {ratingClaim && <RatingModal claim={ratingClaim} onClose={() => setRatingClaim(null)} />}
     </div>
   )
 }

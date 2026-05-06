@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from .database import init_db, AsyncSessionLocal
 from .config import settings
-from .routers import auth, listings, claims, notifications, admin
+from .routers import auth, listings, claims, notifications, admin, messages
 from .services.listing_service import expire_stale_listings
 
 logger = structlog.get_logger()
@@ -51,6 +51,7 @@ app.include_router(listings.router)
 app.include_router(claims.router)
 app.include_router(notifications.router)
 app.include_router(admin.router)
+app.include_router(messages.router)
 
 
 @app.get("/", tags=["health"])

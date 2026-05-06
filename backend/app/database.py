@@ -30,5 +30,5 @@ async def get_db():
 
 async def init_db():
     async with engine.begin() as conn:
-        from .models import user, listing, transaction, notification  # noqa: F401
+        from .models import user, listing, transaction, notification, message  # noqa: F401
         await conn.run_sync(Base.metadata.create_all)

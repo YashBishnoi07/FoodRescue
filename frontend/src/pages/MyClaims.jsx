@@ -3,7 +3,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getMyClaims, cancelClaim } from '../api/claims'
 import { useNotifications } from '../context/NotificationContext'
 import LoadingSpinner from '../components/common/LoadingSpinner'
-import { XCircle, Star } from 'lucide-react'
+import ChatWindow from '../components/chat/ChatWindow'
+import { XCircle, Star, MessageCircle } from 'lucide-react'
 import { format } from 'date-fns'
 
 const statusBadge = { pending: 'badge-yellow', confirmed: 'badge-blue', completed: 'badge-green', cancelled: 'badge-red' }
@@ -11,6 +12,7 @@ const statusBadge = { pending: 'badge-yellow', confirmed: 'badge-blue', complete
 export default function MyClaims() {
   const { addToast } = useNotifications()
   const qc = useQueryClient()
+  const [activeChat, setActiveChat] = useState(null)
 
   const { data: claims = [], isLoading } = useQuery({
     queryKey: ['myClaims'],
@@ -25,7 +27,7 @@ export default function MyClaims() {
   })
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-4 py-8 relative">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-white">My Claims</h1>
         <p className="text-gray-400 text-sm mt-1">Track your food claim history</p>
@@ -63,16 +65,26 @@ export default function MyClaims() {
                   <p className="text-xs text-gray-500 mt-1">Reason: {c.cancel_reason}</p>
                 )}
               </div>
-              {['pending', 'confirmed'].includes(c.status) && (
-                <button onClick={() => cancelMutation.mutate(c.id)}
-                  className="shrink-0 flex items-center gap-1 text-xs text-red-400 hover:text-red-300 transition-colors">
-                  <XCircle className="w-4 h-4" /> Cancel
-                </button>
-              )}
+              <div className="flex flex-col gap-2 shrink-0">
+                {['pending', 'confirmed'].includes(c.status) && (
+                  <>
+                    <button onClick={() => setActiveChat(c.id)}
+                      className="btn-secondary py-1 px-2 text-xs flex items-center gap-1">
+                      <MessageCircle className="w-3.5 h-3.5" /> Chat
+                    </button>
+                    <button onClick={() => cancelMutation.mutate(c.id)}
+                      className="flex items-center justify-center gap-1 text-xs text-red-400 hover:text-red-300 transition-colors mt-1">
+                      <XCircle className="w-4 h-4" /> Cancel
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           ))}
         </div>
       )}
+      
+      {activeChat && <ChatWindow claimId={activeChat} onClose={() => setActiveChat(null)} />}
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getNotifications, markAllRead } from '../api/claims'
 import { useAuth } from './AuthContext'
 
@@ -9,6 +9,8 @@ export function NotificationProvider({ children }) {
   const { user } = useAuth()
   const [toasts, setToasts] = useState([])
 
+  const qc = useQueryClient()
+
   const { data } = useQuery({
     queryKey: ['notifications'],
     queryFn: async () => {
@@ -16,8 +18,7 @@ export function NotificationProvider({ children }) {
       return res.data
     },
     enabled: !!user,
-    refetchInterval: 15_000, // poll every 15 seconds
-    staleTime: 10_000,
+    refetchInterval: 15_000,
   })
 
   const notifications = data || []
@@ -28,6 +29,41 @@ export function NotificationProvider({ children }) {
     setToasts((prev) => [...prev, { id, message, type }])
     setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 4000)
   }, [])
+
+  useEffect(() => {
+    if (!user) return
+
+    // Request native push notification permission
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission()
+    }
+
+    const token = localStorage.getItem('access_token')
+    if (!token) return
+
+    // Connect to WebSocket
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+    const wsUrl = `${protocol}//localhost:8000/api/notifications/ws?token=${token}`
+    const ws = new WebSocket(wsUrl)
+
+    ws.onmessage = (event) => {
+      try {
+        const notif = JSON.parse(event.data)
+        // Show in-app toast
+        addToast(notif.message, notif.type)
+        // Show native push notification
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification(notif.title || 'FoodRescue', { body: notif.message, icon: '/vite.svg' })
+        }
+        // Invalidate queries to refresh data
+        qc.invalidateQueries(['notifications'])
+      } catch (e) {
+        console.error('WS Error:', e)
+      }
+    }
+
+    return () => ws.close()
+  }, [user, addToast, qc])
 
   const removeToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id))
 

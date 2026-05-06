@@ -50,3 +50,27 @@ async def mark_one_read(
         notif.read = True
         await db.commit()
     return {"message": "Marked as read"}
+
+
+from fastapi import WebSocket, WebSocketDisconnect
+from ..websocket_manager import manager
+from ..services.auth_service import decode_token
+
+@router.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket, token: str):
+    try:
+        payload = decode_token(token)
+        user_id = payload.get("sub")
+        if not user_id:
+            await websocket.close(code=1008)
+            return
+    except Exception:
+        await websocket.close(code=1008)
+        return
+
+    await manager.connect(websocket, user_id)
+    try:
+        while True:
+            data = await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, user_id)

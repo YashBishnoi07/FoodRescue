@@ -42,7 +42,7 @@ export default function ListingCard({ listing, onClaim, onView, showActions = tr
 
   return (
     <div
-      className={`card flex flex-col gap-3 hover:border-brand-500/40 transition-all duration-200 cursor-pointer group ${expired ? 'opacity-60' : ''}`}
+      className={`glass p-5 flex flex-col gap-3 hover:border-brand-500/40 hover:shadow-lg hover:shadow-brand-500/5 transition-all duration-300 cursor-pointer group ${expired ? 'opacity-60' : ''}`}
       onClick={() => onView?.(listing)}
     >
       {/* Header */}

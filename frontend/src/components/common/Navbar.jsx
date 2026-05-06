@@ -13,10 +13,11 @@ const navLinks = {
 
 export default function Navbar() {
   const { user, logout } = useAuth()
-  const { unreadCount, toasts, removeToast } = useNotifications()
+  const { unreadCount, toasts, removeToast, notifications, markAllRead } = useNotifications()
   const navigate = useNavigate()
   const location = useLocation()
   const [open, setOpen] = useState(false)
+  const [notifOpen, setNotifOpen] = useState(false)
 
   const links = user ? (navLinks[user.role] || []) : []
 
@@ -54,14 +55,38 @@ export default function Navbar() {
             <div className="flex items-center gap-3">
               {user ? (
                 <>
-                  <Link to="/profile" className="relative p-2 text-gray-400 hover:text-white transition-colors">
-                    <Bell className="w-5 h-5" />
-                    {unreadCount > 0 && (
-                      <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 rounded-full text-xs flex items-center justify-center text-white font-bold">
-                        {unreadCount > 9 ? '9+' : unreadCount}
-                      </span>
+                  <div className="relative">
+                    <button onClick={() => setNotifOpen(!notifOpen)} className="relative p-2 text-gray-400 hover:text-white transition-colors">
+                      <Bell className="w-5 h-5" />
+                      {unreadCount > 0 && (
+                        <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 rounded-full text-xs flex items-center justify-center text-white font-bold">
+                          {unreadCount > 9 ? '9+' : unreadCount}
+                        </span>
+                      )}
+                    </button>
+                    {notifOpen && (
+                      <div className="absolute right-0 mt-2 w-80 bg-gray-900 border border-gray-800 rounded-lg shadow-xl overflow-hidden z-50 animate-fade-in">
+                        <div className="p-3 border-b border-gray-800 flex justify-between items-center bg-gray-950">
+                          <h3 className="text-sm font-bold text-white">Notifications</h3>
+                          {unreadCount > 0 && (
+                            <button onClick={markAllRead} className="text-xs text-brand-400 hover:underline">Mark all read</button>
+                          )}
+                        </div>
+                        <div className="max-h-80 overflow-y-auto">
+                          {notifications.length === 0 ? (
+                            <p className="p-4 text-sm text-gray-500 text-center">No notifications yet.</p>
+                          ) : (
+                            notifications.map(n => (
+                              <div key={n.id} className={`p-3 border-b border-gray-800 last:border-0 ${!n.read ? 'bg-gray-800/50' : ''}`}>
+                                <p className="text-sm text-gray-200">{n.message}</p>
+                                <p className="text-[10px] text-gray-500 mt-1">{new Date(n.created_at).toLocaleString()}</p>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
                     )}
-                  </Link>
+                  </div>
                   <span className="hidden md:block text-sm text-gray-300">
                     {user.name} <span className="badge-green ml-1">{user.role}</span>
                   </span>
