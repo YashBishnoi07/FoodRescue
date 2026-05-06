@@ -1,79 +1,85 @@
 import { useState } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { Leaf } from 'lucide-react'
+import { LogIn } from 'lucide-react'
+import AnimatedSection from '../components/common/AnimatedSection'
 
 export default function Login() {
-  const { login } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const [form, setForm] = useState({ email: '', password: '' })
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-
-  const from = location.state?.from?.pathname || '/dashboard'
+  const { login } = useAuth()
+  const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     setLoading(true)
     try {
-      await login(form.email, form.password)
-      navigate(from, { replace: true })
+      await login(email, password)
+      navigate('/dashboard')
     } catch (err) {
-      setError(err.response?.data?.detail || 'Invalid email or password')
+      setError(err.response?.data?.detail || 'Login failed')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12">
-      {/* Background orbs */}
-      <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-brand-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-amber-500/8 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen flex bg-brand-cream">
+      {/* Left split screen image */}
+      <div className="hidden lg:flex lg:w-1/2 relative bg-brand-olive overflow-hidden items-center justify-center">
+        {/* Placeholder for real image */}
+        <div className="absolute inset-0 bg-[#2E5034] opacity-90"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+        <AnimatedSection className="relative z-10 p-12 max-w-xl text-center">
+          <p className="text-4xl font-serif font-bold text-[#F5F0E8] italic leading-relaxed">
+            "We have the power to turn excess into impact."
+          </p>
+          <p className="text-[#D4C5A9] mt-6 font-medium uppercase tracking-widest text-sm">— The HyperLocal Community</p>
+        </AnimatedSection>
+      </div>
 
-      <div className="w-full max-w-md relative">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 text-brand-400 font-bold text-2xl">
-            <Leaf className="w-7 h-7" /> FoodRescue
-          </Link>
-          <h1 className="text-2xl font-bold text-white mt-4">Welcome back</h1>
-          <p className="text-gray-400 text-sm mt-1">Sign in to your account</p>
-        </div>
+      {/* Right split screen form */}
+      <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-20 py-12">
+        <AnimatedSection className="w-full max-w-md mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-4xl font-serif font-bold text-brand-textPrimary">Welcome back</h2>
+            <p className="mt-3 text-brand-textSecondary font-medium">Log in to continue rescuing food.</p>
+          </div>
 
-        <div className="card">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="label">Email</label>
-              <input id="email" type="email" className="input" placeholder="you@example.com" required
-                value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-            </div>
-            <div>
-              <label className="label">Password</label>
-              <input id="password" type="password" className="input" placeholder="••••••••" required
-                value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
-            </div>
-
+          <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-lg p-3">
+              <div className="bg-brand-amber/10 border border-brand-amber text-brand-amber text-sm p-4 rounded-[12px] font-medium text-center">
                 {error}
               </div>
             )}
+            
+            <div>
+              <label className="label">Email Address</label>
+              <input type="email" required className="input" placeholder="you@example.com"
+                value={email} onChange={(e) => setEmail(e.target.value)} />
+            </div>
 
-            <button id="login-btn" type="submit" disabled={loading} className="btn-primary w-full py-3 text-base mt-2">
+            <div>
+              <label className="label">Password</label>
+              <input type="password" required className="input" placeholder="••••••••"
+                value={password} onChange={(e) => setPassword(e.target.value)} />
+            </div>
+
+            <button type="submit" disabled={loading} className="btn-primary w-full py-3.5 text-lg shadow-xl">
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
 
-          <p className="text-center text-sm text-gray-400 mt-4">
+          <p className="mt-8 text-center text-sm text-brand-textSecondary font-medium">
             Don't have an account?{' '}
-            <Link to="/register" className="text-brand-400 hover:text-brand-300 font-medium transition-colors">
-              Sign up free
+            <Link to="/register" className="text-brand-olive hover:text-[#2E5034] font-bold border-b border-transparent hover:border-[#2E5034] transition-colors pb-0.5">
+              Sign up for free
             </Link>
           </p>
-        </div>
+        </AnimatedSection>
       </div>
     </div>
   )

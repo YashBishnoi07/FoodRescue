@@ -10,11 +10,11 @@ export default function UserReputationBadge({ userId }) {
   })
 
   if (isLoading || !data) return null
-  if (data.total_ratings === 0) return <span className="text-[10px] text-gray-500 bg-gray-800 px-1.5 rounded">New User</span>
+  if (data.total_ratings === 0) return <span className="text-[10px] font-bold uppercase tracking-wider text-brand-textSecondary bg-[#F5F0E8] px-2 py-0.5 rounded-full border border-[#E8DFD0]">New User</span>
 
   return (
-    <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/20">
-      <Star className="w-3 h-3 fill-amber-400" />
+    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-brand-amber bg-[#FDF5E6] px-2 py-0.5 rounded-full border border-[#FBE3B8]">
+      <Star className="w-3 h-3 fill-brand-amber text-brand-amber" />
       {data.average_rating} ({data.total_ratings})
     </span>
   )

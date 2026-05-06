@@ -1,7 +1,7 @@
 import LoadingSpinner from '../common/LoadingSpinner'
 import ListingCard from './ListingCard'
 
-export default function ListingGrid({ listings, loading, onClaim, onView, emptyMessage = 'No listings found.' }) {
+export default function ListingGrid({ listings, loading, onClaim, onView, showActions = true, emptyMessage = 'No listings found.' }) {
   if (loading) {
     return (
       <div className="flex justify-center py-16">
@@ -27,6 +27,7 @@ export default function ListingGrid({ listings, loading, onClaim, onView, emptyM
             listing={listing}
             onClaim={onClaim}
             onView={onView}
+            showActions={showActions}
           />
         </div>
       ))}
