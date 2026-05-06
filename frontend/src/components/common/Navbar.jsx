@@ -6,7 +6,7 @@ import { useState } from 'react'
 import Toast from './Toast'
 
 const navLinks = {
-  donor:    [{ to: '/dashboard', label: 'Dashboard' }, { to: '/my-listings', label: 'My Listings' }, { to: '/add-listing', label: '+ Add Food' }],
+  donor:    [{ to: '/dashboard', label: 'Dashboard' }, { to: '/my-listings', label: 'My Listings' }, { to: '/add-listing', label: '+ Add Food' }, { to: '/browse', label: 'Browse Food' }],
   receiver: [{ to: '/dashboard', label: 'Dashboard' }, { to: '/browse', label: 'Browse Food' }, { to: '/my-claims', label: 'My Claims' }],
   admin:    [{ to: '/dashboard', label: 'Dashboard' }, { to: '/browse', label: 'Browse' }, { to: '/admin', label: 'Admin Panel' }],
 }

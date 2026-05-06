@@ -36,7 +36,7 @@ export default function App() {
             </Route>
 
             {/* Receiver routes */}
-            <Route element={<ProtectedRoute allowedRoles={['receiver', 'admin']} />}>
+            <Route element={<ProtectedRoute allowedRoles={['receiver', 'admin', 'donor']} />}>
               <Route path="/browse" element={<BrowseFood />} />
               <Route path="/my-claims" element={<MyClaims />} />
             </Route>
